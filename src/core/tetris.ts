@@ -1,16 +1,24 @@
 import { IShape } from "./shapes/Ishape";
+import { Oshape } from "./shapes/Oshape";
 import { Board } from "./shapes/tetromino";
-import { Vector2 } from "./utils";
+import { pickRandom, Vector2 } from "./utils";
 
 export enum Color {
-  Red = "red",
-  Blue = "blue",
-  Green = "green",
-  Yellow = "yellow",
-  Purple = "purple",
-  Orange = "orange",
-  Cyan = "cyan",
-  White = "white",
+  Cyan = "#01EDFA",
+  Purple = "#DD0AB2",
+  Red = "#EA141C",
+  DarkOrange = "#FE4819",
+  SandyBrown = "#FF910C",
+  DarkGreen = "#39892F",
+  Blue = "#0077D3",
+  DarkPurple = "#78256F",
+  Navy = "#2E2E84",
+  DarkMediumBlue = "#485DC5",
+  Salmon = "#FD3F59",
+  Orange = "#FFC82E",
+  Yellow = "#FEFB34",
+  Green = "#53DA3F",
+  White = "#FFFFFF",
 }
 
 export enum Move {
@@ -28,19 +36,24 @@ export type GameState = {
   time: number;
 };
 
-// export const BOARD_WIDTH = 10;
-// export const BOARD_HEIGHT = 20;
-
 export const createEmptyBoard = (board: Board): Color[][] =>
   Array(board.height)
     .fill(null)
     .map(() => Array(board.width).fill(Color.White));
 
+const pickRandomColor = (): Color =>
+  pickRandom(Object.values(Color).filter((color) => color !== Color.White));
+
+const pickRandomTetromino = (): Vector2[] => {
+  const tetrominos = [IShape.shape, Oshape.shape];
+  return pickRandom(tetrominos);
+};
+
 export const init = (board: Board): GameState => {
   return {
     board: createEmptyBoard(board),
-    tetromino: IShape.shape,
-    tetrominoColor: Color.Red,
+    tetromino: pickRandomTetromino(),
+    tetrominoColor: pickRandomColor(),
     score: 0,
     time: 0,
   };
@@ -83,7 +96,26 @@ export const update = (
     state.tetromino.forEach(([x, y]) => {
       state.board[y][x] = state.tetrominoColor;
     });
-    state.tetromino = IShape.shape;
+    state.tetromino = pickRandomTetromino();
+    state.tetrominoColor = pickRandomColor();
+  }
+
+  // detect if there is a full row
+  const fullRows = state.board.reduce((acc, row, y) => {
+    if (row.every((cell) => cell !== Color.White)) {
+      acc.push(y);
+    }
+
+    return acc;
+  }, [] as number[]);
+
+  if (fullRows.length > 0) {
+    fullRows.forEach((y) => {
+      state.board.splice(y, 1);
+      state.board.unshift(Array(board.width).fill(Color.White));
+    });
+
+    state.score += fullRows.length;
   }
 
   return { ...state };

@@ -1,5 +1,10 @@
 import { Move } from "../tetris";
-import { Vector2 } from "../utils";
+import {
+  hasBottomEdgeCollision,
+  hasLeftEdgeCollision,
+  hasRightEdgeCollision,
+  Vector2,
+} from "../utils";
 import { Board, Tetromino } from "./tetromino";
 
 export const IShape: Tetromino = {
@@ -55,14 +60,17 @@ export const IShape: Tetromino = {
   ): Vector2[] => {
     switch (move) {
       case Move.Left:
-        const isLeftEdge = current.some(([x]) => x === 0);
-        return isLeftEdge ? current : current.map(([x, y]) => [x - 1, y]);
+        return hasLeftEdgeCollision(current)
+          ? current
+          : current.map(([x, y]) => [x - 1, y]);
       case Move.Right:
-        const isRightEdge = current.some(([x]) => x === board.width - 1);
-        return isRightEdge ? current : current.map(([x, y]) => [x + 1, y]);
+        return hasRightEdgeCollision(current, board.width)
+          ? current
+          : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        const isBottomEdge = current.some(([_, y]) => y === board.height - 1);
-        return isBottomEdge ? current : current.map(([x, y]) => [x, y + 1]);
+        return hasBottomEdgeCollision(current, board.height)
+          ? current
+          : current.map(([x, y]) => [x, y + 1]);
     }
   },
 };

@@ -1,5 +1,15 @@
-import { GameState, init, Move, update } from "./core/tetris";
+import { Color, GameState, init, Move, update } from "./core/tetris";
 import "./style.css";
+
+export const GLOBALS = {
+  board: {
+    width: 10,
+    height: 20,
+  },
+  cellSize: 20,
+  speed: 500,
+  eventQueue: [] as Move[],
+};
 
 function clearCanvas(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "white";
@@ -16,7 +26,7 @@ function renderBoard(ctx: CanvasRenderingContext2D, state: GameState) {
     for (let x = 0; x < boardWidth; x++) {
       const color = board[y][x];
       // if color is white, draw a dot
-      if (color === "white") {
+      if (color === Color.White) {
         ctx.fillStyle = "black";
         ctx.fillRect(
           x * cellSize + cellSize / 2 - 1,
@@ -40,37 +50,31 @@ function renderBoard(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
-const board = {
-  width: 10,
-  height: 20,
-};
-
-let cellSize = 20;
-
-let speed = 500;
-
-async function main() {
-  // init game loop
-  let state = init(board);
-  let eventQueue: Move[] = [];
-
+function moveEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowUp") {
-      eventQueue.push(Move.Rotate);
+      GLOBALS.eventQueue.push(Move.Rotate);
     }
 
     if (event.key === "ArrowLeft") {
-      eventQueue.push(Move.Left);
+      GLOBALS.eventQueue.push(Move.Left);
     }
 
     if (event.key === "ArrowRight") {
-      eventQueue.push(Move.Right);
+      GLOBALS.eventQueue.push(Move.Right);
     }
 
     if (event.key === "ArrowDown") {
-      eventQueue.push(Move.Down);
+      GLOBALS.eventQueue.push(Move.Down);
     }
   });
+}
+
+async function main() {
+  // init game loop
+  let state = init(GLOBALS.board);
+
+  moveEvents();
 
   const canvas = document.getElementById("tetris") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
@@ -80,8 +84,8 @@ async function main() {
   }
 
   // set canvas size
-  const width = board.width * cellSize;
-  const height = board.height * cellSize;
+  const width = GLOBALS.board.width * GLOBALS.cellSize;
+  const height = GLOBALS.board.height * GLOBALS.cellSize;
 
   canvas.width = width;
   canvas.height = height;
@@ -89,9 +93,15 @@ async function main() {
   let animationFrameId: number;
 
   const loop = (time: number) => {
-    const move = eventQueue.shift();
+    const move = GLOBALS.eventQueue.shift();
     // update
-    const newState = update(state, time, board, speed || 500, move);
+    const newState = update(
+      state,
+      time,
+      GLOBALS.board,
+      GLOBALS.speed || 500,
+      move
+    );
     state = newState;
 
     // clear canvas
@@ -109,19 +119,19 @@ async function main() {
   ) as HTMLInputElement;
 
   cellSizeInput.addEventListener("change", (event) => {
-    cellSize = parseInt(cellSizeInput.value);
+    GLOBALS.cellSize = parseInt(cellSizeInput.value);
 
-    canvas.width = board.width * cellSize;
-    canvas.height = board.height * cellSize;
+    canvas.width = GLOBALS.board.width * GLOBALS.cellSize;
+    canvas.height = GLOBALS.board.height * GLOBALS.cellSize;
   });
 
   const rowsInput = document.getElementById("rows") as HTMLInputElement;
   rowsInput.addEventListener("change", (event) => {
-    board.height = parseInt(rowsInput.value);
+    GLOBALS.board.height = parseInt(rowsInput.value);
 
-    canvas.height = board.height * cellSize;
+    canvas.height = GLOBALS.board.height * GLOBALS.cellSize;
 
-    state = init(board);
+    state = init(GLOBALS.board);
 
     // clear requestAnimationFrame
     cancelAnimationFrame(animationFrameId);
@@ -131,11 +141,13 @@ async function main() {
 
   const colsInput = document.getElementById("cols") as HTMLInputElement;
   colsInput.addEventListener("change", (event) => {
-    board.width = parseInt(colsInput.value);
 
-    canvas.width = board.width * cellSize;
+    GLOBALS.board.width = parseInt(colsInput.value);
+    GLOBALS.board.width = parseInt(colsInput.value);
 
-    state = init(board);
+    canvas.width = GLOBALS.board.width * GLOBALS.cellSize;
+
+    state = init(GLOBALS.board);
 
     // clear requestAnimationFrame
     cancelAnimationFrame(animationFrameId);
@@ -145,7 +157,7 @@ async function main() {
 
   const speedInput = document.getElementById("speed") as HTMLInputElement;
   speedInput.addEventListener("change", (event) => {
-    speed = parseInt(speedInput.value);
+    GLOBALS.speed = parseInt(speedInput.value);
   });
 
   requestAnimationFrame(loop);
