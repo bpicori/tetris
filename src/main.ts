@@ -1,11 +1,4 @@
-import {
-  BOARD_HEIGHT,
-  BOARD_WIDTH,
-  GameState,
-  init,
-  Move,
-  update,
-} from "./core/tetris";
+import { GameState, init, Move, update } from "./core/tetris";
 import "./style.css";
 
 function clearCanvas(ctx: CanvasRenderingContext2D) {
@@ -31,6 +24,9 @@ function renderBoard(ctx: CanvasRenderingContext2D, state: GameState) {
           1,
           1
         );
+      } else {
+        ctx.fillStyle = color;
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
       }
     }
   }
@@ -44,12 +40,19 @@ function renderBoard(ctx: CanvasRenderingContext2D, state: GameState) {
   }
 }
 
+const board = {
+  width: 10,
+  height: 20,
+};
+
+let cellSize = 20;
+
+let speed = 500;
+
 async function main() {
   // init game loop
-  let state = init();
-  let lastTime = 0;
+  let state = init(board);
   let eventQueue: Move[] = [];
-  // set canvas size
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowUp") {
@@ -72,24 +75,24 @@ async function main() {
   const canvas = document.getElementById("tetris") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
 
+  if (!ctx) {
+    throw new Error("Canvas context is null");
+  }
+
   // set canvas size
-  const cellSize = 20;
-  const width = BOARD_WIDTH * cellSize;
-  const height = BOARD_HEIGHT * cellSize;
+  const width = board.width * cellSize;
+  const height = board.height * cellSize;
 
   canvas.width = width;
   canvas.height = height;
 
-  const loop = (time: number) => {
-    if (!ctx) {
-      throw new Error("Canvas context is null");
-    }
+  let animationFrameId: number;
 
+  const loop = (time: number) => {
     const move = eventQueue.shift();
     // update
-    const newState = update(state, lastTime, time, move);
+    const newState = update(state, time, board, speed || 500, move);
     state = newState;
-    lastTime = time;
 
     // clear canvas
     clearCanvas(ctx);
@@ -98,8 +101,52 @@ async function main() {
     renderBoard(ctx, state);
 
     // schedule next frame
-    requestAnimationFrame(loop);
+    animationFrameId = requestAnimationFrame(loop);
   };
+
+  const cellSizeInput = document.getElementById(
+    "cell-size"
+  ) as HTMLInputElement;
+
+  cellSizeInput.addEventListener("change", (event) => {
+    cellSize = parseInt(cellSizeInput.value);
+
+    canvas.width = board.width * cellSize;
+    canvas.height = board.height * cellSize;
+  });
+
+  const rowsInput = document.getElementById("rows") as HTMLInputElement;
+  rowsInput.addEventListener("change", (event) => {
+    board.height = parseInt(rowsInput.value);
+
+    canvas.height = board.height * cellSize;
+
+    state = init(board);
+
+    // clear requestAnimationFrame
+    cancelAnimationFrame(animationFrameId);
+
+    requestAnimationFrame(loop);
+  });
+
+  const colsInput = document.getElementById("cols") as HTMLInputElement;
+  colsInput.addEventListener("change", (event) => {
+    board.width = parseInt(colsInput.value);
+
+    canvas.width = board.width * cellSize;
+
+    state = init(board);
+
+    // clear requestAnimationFrame
+    cancelAnimationFrame(animationFrameId);
+
+    requestAnimationFrame(loop);
+  });
+
+  const speedInput = document.getElementById("speed") as HTMLInputElement;
+  speedInput.addEventListener("change", (event) => {
+    speed = parseInt(speedInput.value);
+  });
 
   requestAnimationFrame(loop);
 }

@@ -1,3 +1,9 @@
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+
 #tetris {
   position: absolute;
   top: 0;
@@ -7,4 +13,3 @@
   margin: auto;
   border: 1px solid #000;
 }
-
