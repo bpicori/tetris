@@ -2,7 +2,7 @@ import { Color, GameState, init, Move, update } from "./core/tetris";
 import "./style.css";
 
 export const GLOBALS = {
-  board: {
+  boardSize: {
     width: 10,
     height: 20,
   },
@@ -72,7 +72,7 @@ function moveEvents() {
 
 async function main() {
   // init game loop
-  let state = init(GLOBALS.board);
+  let state = init(GLOBALS.boardSize);
 
   moveEvents();
 
@@ -84,8 +84,8 @@ async function main() {
   }
 
   // set canvas size
-  const width = GLOBALS.board.width * GLOBALS.cellSize;
-  const height = GLOBALS.board.height * GLOBALS.cellSize;
+  const width = GLOBALS.boardSize.width * GLOBALS.cellSize;
+  const height = GLOBALS.boardSize.height * GLOBALS.cellSize;
 
   canvas.width = width;
   canvas.height = height;
@@ -98,11 +98,20 @@ async function main() {
     const newState = update(
       state,
       time,
-      GLOBALS.board,
+      GLOBALS.boardSize,
       GLOBALS.speed || 500,
       move
     );
     state = newState;
+
+    if (state.gameOver) {
+      clearCanvas(ctx);
+      // draw game over
+      ctx.fillStyle = "black";
+      ctx.font = "30px Arial";
+      ctx.fillText("Game Over", 10, 50);
+      return;
+    }
 
     // clear canvas
     clearCanvas(ctx);
@@ -118,20 +127,20 @@ async function main() {
     "cell-size"
   ) as HTMLInputElement;
 
-  cellSizeInput.addEventListener("change", (event) => {
+  cellSizeInput.addEventListener("change", (_event) => {
     GLOBALS.cellSize = parseInt(cellSizeInput.value);
 
-    canvas.width = GLOBALS.board.width * GLOBALS.cellSize;
-    canvas.height = GLOBALS.board.height * GLOBALS.cellSize;
+    canvas.width = GLOBALS.boardSize.width * GLOBALS.cellSize;
+    canvas.height = GLOBALS.boardSize.height * GLOBALS.cellSize;
   });
 
   const rowsInput = document.getElementById("rows") as HTMLInputElement;
-  rowsInput.addEventListener("change", (event) => {
-    GLOBALS.board.height = parseInt(rowsInput.value);
+  rowsInput.addEventListener("change", (_event) => {
+    GLOBALS.boardSize.height = parseInt(rowsInput.value);
 
-    canvas.height = GLOBALS.board.height * GLOBALS.cellSize;
+    canvas.height = GLOBALS.boardSize.height * GLOBALS.cellSize;
 
-    state = init(GLOBALS.board);
+    state = init(GLOBALS.boardSize);
 
     // clear requestAnimationFrame
     cancelAnimationFrame(animationFrameId);
@@ -140,14 +149,13 @@ async function main() {
   });
 
   const colsInput = document.getElementById("cols") as HTMLInputElement;
-  colsInput.addEventListener("change", (event) => {
+  colsInput.addEventListener("change", (_event) => {
+    GLOBALS.boardSize.width = parseInt(colsInput.value);
+    GLOBALS.boardSize.width = parseInt(colsInput.value);
 
-    GLOBALS.board.width = parseInt(colsInput.value);
-    GLOBALS.board.width = parseInt(colsInput.value);
+    canvas.width = GLOBALS.boardSize.width * GLOBALS.cellSize;
 
-    canvas.width = GLOBALS.board.width * GLOBALS.cellSize;
-
-    state = init(GLOBALS.board);
+    state = init(GLOBALS.boardSize);
 
     // clear requestAnimationFrame
     cancelAnimationFrame(animationFrameId);
@@ -156,7 +164,7 @@ async function main() {
   });
 
   const speedInput = document.getElementById("speed") as HTMLInputElement;
-  speedInput.addEventListener("change", (event) => {
+  speedInput.addEventListener("change", (_event) => {
     GLOBALS.speed = parseInt(speedInput.value);
   });
 

@@ -5,16 +5,20 @@ import {
   hasRightEdgeCollision,
   Vector2,
 } from "../utils";
-import { Board, Tetromino } from "./tetromino";
+import { BoardSize, Tetromino } from "./tetromino";
 
 export const IShape: Tetromino = {
-  shape: [
-    [0, 0],
-    [1, 0],
-    [2, 0],
-    [3, 0],
-  ],
-  rotate: (current: Vector2[], board: Board): Vector2[] => {
+  shape: (board: BoardSize) => {
+    const x = Math.floor(board.width / 2);
+    return [
+      [x - 1, 0],
+      [x, 0],
+      [x + 1, 0],
+      [x + 2, 0],
+    ];
+  },
+
+  rotate: (current: Vector2[], board: BoardSize): Vector2[] => {
     // detect if is is horizontal or vertical
     const isHorizontal = current[0][1] === current[1][1];
 
@@ -56,7 +60,7 @@ export const IShape: Tetromino = {
   move: (
     current: Vector2[],
     move: Move.Left | Move.Right | Move.Down,
-    board: Board
+    board: BoardSize
   ): Vector2[] => {
     switch (move) {
       case Move.Left:

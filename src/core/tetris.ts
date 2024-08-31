@@ -1,7 +1,23 @@
 import { IShape } from "./shapes/Ishape";
 import { Oshape } from "./shapes/Oshape";
-import { Board } from "./shapes/tetromino";
+import { BoardSize } from "./shapes/tetromino";
 import { pickRandom, Vector2 } from "./utils";
+
+/**
+ * TODO: Game over doesn't work
+ * TODO: Add other shapes
+ *      - JShape
+ *      - LShape
+ *      - SShape
+ *      - TShape
+ *      - ZShape
+ * TODO: Add a preview of the next tetromino
+ * TODO: Add a start screen
+ * TODO: Add a pause screen
+ * TODO: Add a game over screen
+ * TODO: Add a score
+ * TODO: Add effects when a row is completed
+ */
 
 export enum Color {
   Cyan = "#01EDFA",
@@ -28,44 +44,57 @@ export enum Move {
   Rotate = "rotate",
 }
 
+export type Board = Color[][];
+export type Tetromino = Vector2[];
+
 export type GameState = {
-  board: Color[][];
-  tetromino: Vector2[];
+  board: Board;
+  tetromino: Tetromino;
   tetrominoColor: Color;
   score: number;
   time: number;
+  gameOver: boolean;
 };
 
-export const createEmptyBoard = (board: Board): Color[][] =>
+export const createEmptyBoard = (board: BoardSize): Board =>
   Array(board.height)
     .fill(null)
     .map(() => Array(board.width).fill(Color.White));
 
-const pickRandomColor = (): Color =>
-  pickRandom(Object.values(Color).filter((color) => color !== Color.White));
+export const pickRandomColor = (exclude?: Color): Color =>
+  pickRandom(
+    Object.values(Color).filter(
+      (color) => color !== Color.White || color !== exclude
+    )
+  );
 
-const pickRandomTetromino = (): Vector2[] => {
-  const tetrominos = [IShape.shape, Oshape.shape];
+export const pickRandomTetromino = (board: BoardSize): Vector2[] => {
+  const tetrominos = [IShape.shape(board), Oshape.shape(board)];
   return pickRandom(tetrominos);
 };
 
-export const init = (board: Board): GameState => {
+export const init = (board: BoardSize): GameState => {
   return {
     board: createEmptyBoard(board),
-    tetromino: pickRandomTetromino(),
+    tetromino: pickRandomTetromino(board),
     tetrominoColor: pickRandomColor(),
     score: 0,
     time: 0,
+    gameOver: false,
   };
 };
 
 export const update = (
   state: GameState,
   currentTime: number,
-  board: Board,
+  board: BoardSize,
   speed: number,
   move?: Move
 ): GameState => {
+  if (state.gameOver) {
+    return { ...state };
+  }
+
   if (move) {
     if (move === Move.Rotate) {
       state.tetromino = IShape.rotate(state.tetromino, board);
@@ -96,9 +125,13 @@ export const update = (
     state.tetromino.forEach(([x, y]) => {
       state.board[y][x] = state.tetrominoColor;
     });
-    state.tetromino = pickRandomTetromino();
+    state.tetromino = pickRandomTetromino(board);
     state.tetrominoColor = pickRandomColor();
   }
+
+  // check if the game is over
+  const isGameOver = state.board[0].some((cell) => cell !== Color.White);
+  state.gameOver = isGameOver;
 
   // detect if there is a full row
   const fullRows = state.board.reduce((acc, row, y) => {

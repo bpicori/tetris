@@ -5,19 +5,22 @@ import {
   hasRightEdgeCollision,
   Vector2,
 } from "../utils";
-import { Board, Tetromino } from "./tetromino";
+import { BoardSize, Tetromino } from "./tetromino";
 
 export const Oshape: Tetromino = {
-  shape: [
-    [0, 0],
-    [1, 0],
-    [0, 1],
-    [1, 1],
-  ],
-  rotate: (current: Vector2[], board: Board): Vector2[] => {
+  shape: (board: BoardSize) => {
+    const x = Math.floor(board.width / 2);
+    return [
+      [x, 0],
+      [x + 1, 0],
+      [x, 1],
+      [x + 1, 1],
+    ];
+  },
+  rotate: (current: Vector2[], _board: BoardSize): Vector2[] => {
     return current;
   },
-  move: (current: Vector2[], move: Move, board: Board): Vector2[] => {
+  move: (current: Vector2[], move: Move, board: BoardSize): Vector2[] => {
     switch (move) {
       case Move.Left:
         return hasLeftEdgeCollision(current)
