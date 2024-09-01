@@ -1,6 +1,6 @@
 import { Engine, Global } from "../core/runtime";
 import { Move } from "../core/tetris";
-import { Vector2 } from "../core/utils";
+import { safeAccess, Vector2 } from "../core/utils";
 import * as readline from "readline";
 
 const GLOBALS: Global = {
@@ -10,10 +10,13 @@ const GLOBALS: Global = {
 };
 
 const BLOCK_CHAR = "▀";
-const EMPTY_CHAR = " ";
+const EMPTY_CHAR = ".";
 
-const moveCursor = (x: number, y: number) => {
-  process.stdout.write(`\x1b[${y + 1};${x + 1}H`);
+let board: string[][] = [];
+
+const drawBoard = () => {
+  const output = board.map((row) => row.join("")).join("\n");
+  console.log(output);
 };
 
 const clearConsole = () => {
@@ -55,18 +58,15 @@ export const terminalEngine: Engine = {
   clearAll: clearConsole,
 
   clearCell: ([x, y]: Vector2) => {
-    moveCursor(x, y);
-    process.stdout.write(EMPTY_CHAR);
+    safeAccess(board, y, x) && (board[y][x] = EMPTY_CHAR);
   },
 
   drawEmptyCell: ([x, y]: Vector2) => {
-    moveCursor(x, y);
-    process.stdout.write(EMPTY_CHAR);
+    safeAccess(board, y, x) && (board[y][x] = EMPTY_CHAR);
   },
 
   drawCell: ([x, y]: Vector2) => {
-    moveCursor(x, y);
-    process.stdout.write(BLOCK_CHAR);
+    safeAccess(board, y, x) && (board[y][x] = BLOCK_CHAR);
   },
 
   globals: () => GLOBALS,
@@ -78,7 +78,8 @@ export const terminalEngine: Engine = {
   requestAnimationFrame: (callback: (time: number) => void) => {
     return setInterval(() => {
       callback(Date.now());
-      moveCursor(0, GLOBALS.boardSize.height + 1);
+      clearConsole();
+      drawBoard();
     }, GLOBALS.speed) as any;
   },
 
@@ -87,7 +88,6 @@ export const terminalEngine: Engine = {
   },
 
   drawGameOverScreen: () => {
-    moveCursor(0, GLOBALS.boardSize.height + 1);
     console.log("Game Over");
   },
   getEmptyCell: () => EMPTY_CHAR,
