@@ -123,4 +123,14 @@ export const browserEngine: Engine = {
   cancelAnimationFrame: (id) => {
     window.cancelAnimationFrame(id);
   },
+
+  drawGameOverScreen: () => {
+    const canvas = getCanvas();
+    const ctx = getContext(canvas);
+
+    ctx.fillStyle = "black";
+    ctx.font = "40px serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+  },
 };

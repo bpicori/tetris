@@ -17,6 +17,7 @@ export interface Engine {
   onMove(callback: (move: Move) => void): void;
   requestAnimationFrame(callback: (time: number) => void): number;
   cancelAnimationFrame(id: number): void;
+  drawGameOverScreen(): void;
 }
 
 export const run = (engine: Engine) => {
@@ -32,6 +33,12 @@ export const run = (engine: Engine) => {
   let state = init(boardSize);
 
   const gameLoop = (time: number) => {
+    if (state.gameOver) {
+      engine.clearAll()
+      engine.drawGameOverScreen();
+      return;
+    }
+
     const move = moveQueue.shift();
     const newState = update(
       state,
@@ -43,14 +50,14 @@ export const run = (engine: Engine) => {
 
     state = newState;
 
-    // Clear the board
+    // Clear
     for (let y = 0; y < boardSize.height; y++) {
       for (let x = 0; x < boardSize.width; x++) {
         engine.clearCell([x, y]);
       }
     }
 
-    // Draw the board
+    // Draw board
     for (let y = 0; y < boardSize.height; y++) {
       for (let x = 0; x < boardSize.width; x++) {
         const color = state.board[y][x];
@@ -62,7 +69,7 @@ export const run = (engine: Engine) => {
       }
     }
 
-    // Draw the current tetromino
+    // Draw tetromino
     const tetrominoCells = state.tetrominoCells;
     const tetrominoColor = state.tetrominoColor;
 
@@ -70,11 +77,7 @@ export const run = (engine: Engine) => {
       engine.drawCell([x, y], tetrominoColor);
     }
 
-    if (!state.gameOver) {
-      engine.requestAnimationFrame(gameLoop);
-    } else {
-      console.log("Game Over!");
-    }
+    engine.requestAnimationFrame(gameLoop);
   };
 
   engine.requestAnimationFrame(gameLoop);
