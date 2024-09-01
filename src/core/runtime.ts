@@ -1,5 +1,5 @@
 import { BoardSize } from "./shapes/tetromino";
-import { Color, init, Move, update } from "./tetris";
+import { init, Move, update } from "./tetris";
 import { Vector2 } from "./utils";
 
 export interface Global {
@@ -13,7 +13,7 @@ export interface Engine {
   clearAll(): void;
   clearCell(vec: Vector2): void;
   drawEmptyCell(vec: Vector2): void;
-  drawCell(vec: Vector2, color: Color): void;
+  drawCell(vec: Vector2, color: string): void;
   globals(): Global;
   onMove(callback: (move: Move) => void): void;
   requestAnimationFrame(callback: (time: number) => void): number;
