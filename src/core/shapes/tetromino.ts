@@ -1,4 +1,4 @@
-import { Move } from "../tetris";
+import { Board, Move } from "../tetris";
 import { Vector2 } from "../utils";
 
 export interface BoardSize {
@@ -7,7 +7,12 @@ export interface BoardSize {
 }
 
 export interface Tetromino {
-  initialShape(board: BoardSize): Vector2[];
-  rotate(current: Vector2[], board: BoardSize): Vector2[];
-  move(current: Vector2[], move: Move, board: BoardSize): Vector2[];
+  initialShape(boardSize: BoardSize): Vector2[];
+  rotate(current: Vector2[], boardSize: BoardSize, board: Board): Vector2[];
+  move(
+    current: Vector2[],
+    move: Move,
+    boardSize: BoardSize,
+    board: Board
+  ): Vector2[];
 }

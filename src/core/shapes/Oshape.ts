@@ -17,21 +17,21 @@ export const Oshape: Tetromino = {
       [x + 1, 1],
     ];
   },
-  rotate: (current: Vector2[], _board: BoardSize): Vector2[] => {
+  rotate: (current): Vector2[] => {
     return current;
   },
-  move: (current: Vector2[], move: Move, board: BoardSize): Vector2[] => {
+  move: (current, move, boardSize, board): Vector2[] => {
     switch (move) {
       case Move.Left:
-        return hasLeftEdgeCollision(current)
+        return hasLeftEdgeCollision(current, board)
           ? current
           : current.map(([x, y]) => [x - 1, y]);
       case Move.Right:
-        return hasRightEdgeCollision(current, board.width)
+        return hasRightEdgeCollision(current, boardSize.width, board)
           ? current
           : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        return hasBottomEdgeCollision(current, board.height)
+        return hasBottomEdgeCollision(current, boardSize.height, board)
           ? current
           : current.map(([x, y]) => [x, y + 1]);
     }

@@ -1,5 +1,5 @@
 import { BoardSize } from "./shapes/tetromino";
-import { Color, GameState, init, Move, update } from "./tetris";
+import { Color, init, Move, update } from "./tetris";
 import { Vector2 } from "./utils";
 
 export interface Global {

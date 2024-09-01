@@ -1,4 +1,4 @@
-import { Move } from "../tetris";
+import { EmptyCell, Move } from "../tetris";
 import {
   hasBottomEdgeCollision,
   hasLeftEdgeCollision,
@@ -8,8 +8,8 @@ import {
 import { BoardSize, Tetromino } from "./tetromino";
 
 export const IShape: Tetromino = {
-  initialShape: (board: BoardSize) => {
-    const x = Math.floor(board.width / 2);
+  initialShape: (boardSize: BoardSize) => {
+    const x = Math.floor(boardSize.width / 2);
     return [
       [x - 1, 0],
       [x, 0],
@@ -18,7 +18,7 @@ export const IShape: Tetromino = {
     ];
   },
 
-  rotate: (current: Vector2[], board: BoardSize): Vector2[] => {
+  rotate: (current, boardSize, board): Vector2[] => {
     // detect if is is horizontal or vertical
     const isHorizontal = current[0][1] === current[1][1];
 
@@ -26,7 +26,7 @@ export const IShape: Tetromino = {
       const [x, y] = current[1];
 
       // check if possible to rotate
-      if (x === 0 || x === board.width - 1) {
+      if (x === 0 || x === boardSize.width - 1) {
         return current;
       }
 
@@ -42,7 +42,7 @@ export const IShape: Tetromino = {
       const [x, y] = current[1];
 
       // check if possible to rotate
-      if (y === 0 || y === board.height - 1) {
+      if (y === 0 || y === boardSize.height - 1) {
         return current;
       }
 
@@ -54,25 +54,35 @@ export const IShape: Tetromino = {
       ];
     };
 
-    return isHorizontal ? rotateVertical(current) : rotateHorizontal(current);
+    const newPosition = isHorizontal
+      ? rotateVertical(current)
+      : rotateHorizontal(current);
+
+    // check if has collision
+    if (newPosition.some(([x, y]) => board[y][x] !== EmptyCell)) {
+      return current;
+    }
+
+    return newPosition;
   },
 
   move: (
-    current: Vector2[],
+    current,
     move: Move.Left | Move.Right | Move.Down,
-    board: BoardSize
+    boardSize,
+    board
   ): Vector2[] => {
     switch (move) {
       case Move.Left:
-        return hasLeftEdgeCollision(current)
+        return hasLeftEdgeCollision(current, board)
           ? current
           : current.map(([x, y]) => [x - 1, y]);
       case Move.Right:
-        return hasRightEdgeCollision(current, board.width)
+        return hasRightEdgeCollision(current, boardSize.width, board)
           ? current
           : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        return hasBottomEdgeCollision(current, board.height)
+        return hasBottomEdgeCollision(current, boardSize.height, board)
           ? current
           : current.map(([x, y]) => [x, y + 1]);
     }

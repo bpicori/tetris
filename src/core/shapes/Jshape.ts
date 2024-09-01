@@ -3,41 +3,9 @@ import {
   hasLeftEdgeCollision,
   hasRightEdgeCollision,
   hasBottomEdgeCollision,
-  Vector2,
   createVector,
 } from "../utils";
 import { Tetromino } from "./tetromino";
-
-enum Positions {
-  Zero,
-  Right,
-  Left,
-  Two,
-}
-
-const detectPosition = (current: Vector2[]): Positions => {
-  const [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] = current.sort(
-    (a, b) => a[0] - b[0]
-  );
-
-  if (x1 === x2 && y1 < y2 && x2 < x3) {
-    return Positions.Zero;
-  }
-
-  if (x1 > x2 && y1 === y2 && y2 < y3) {
-    return Positions.Right;
-  }
-
-  if (x1 === x2 && y1 > y2 && x2 < x3) {
-    return Positions.Left;
-  }
-
-  if (x1 < x2 && y1 === y2 && y3 < y2) {
-    return Positions.Two;
-  }
-
-  throw new Error("Invalid position on detection");
-};
 
 export const Jshape: Tetromino = {
   initialShape: (board) => {
@@ -49,7 +17,7 @@ export const Jshape: Tetromino = {
       [x + 2, 1],
     ];
   },
-  rotate: (current, boardSize) => {
+  rotate: (current, boardSize, board) => {
     const [centerX, centerY] = current[0]; // The center piece
 
     // Calculate the positions of other pieces relative to the center
@@ -68,18 +36,18 @@ export const Jshape: Tetromino = {
       ),
     ];
   },
-  move: (current, move, board) => {
+  move: (current, move, boardSize, board) => {
     switch (move) {
       case Move.Left:
-        return hasLeftEdgeCollision(current)
+        return hasLeftEdgeCollision(current, board)
           ? current
           : current.map(([x, y]) => [x - 1, y]);
       case Move.Right:
-        return hasRightEdgeCollision(current, board.width)
+        return hasRightEdgeCollision(current, boardSize.width, board)
           ? current
           : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        return hasBottomEdgeCollision(current, board.height)
+        return hasBottomEdgeCollision(current, boardSize.height, board)
           ? current
           : current.map(([x, y]) => [x, y + 1]);
     }

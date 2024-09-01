@@ -57,6 +57,8 @@ export type GameState = {
   gameOver: boolean;
 };
 
+export const EmptyCell = Color.White;
+
 const TetrominosList = [IShape, Jshape, Oshape];
 // const TetrominosList = [Jshape];
 
@@ -96,7 +98,7 @@ export const init = (boardSize: BoardSize): GameState => {
 export const update = (
   state: GameState,
   currentTime: number,
-  board: BoardSize,
+  boardSize: BoardSize,
   speed: number,
   move?: Move
 ): GameState => {
@@ -108,13 +110,15 @@ export const update = (
     if (move === Move.Rotate) {
       state.tetrominoCells = state.tetromino.rotate(
         state.tetrominoCells,
-        board
+        boardSize,
+        state.board
       );
     } else {
       state.tetrominoCells = state.tetromino.move(
         state.tetrominoCells,
         move,
-        board
+        boardSize,
+        state.board
       );
     }
   }
@@ -128,13 +132,14 @@ export const update = (
     state.tetrominoCells = state.tetromino.move(
       state.tetrominoCells,
       Move.Down,
-      board
+      boardSize,
+      state.board 
     );
   }
 
   // check if tetromino touches the board
   const isTouching = state.tetrominoCells.some(([x, y]) => {
-    if (y === board.height - 1) {
+    if (y === boardSize.height - 1) {
       return true;
     }
 
@@ -147,7 +152,7 @@ export const update = (
     });
 
     state.tetromino = pickRandomTetromino();
-    state.tetrominoCells = state.tetromino.initialShape(board);
+    state.tetrominoCells = state.tetromino.initialShape(boardSize);
     state.tetrominoColor = pickRandomColor(state.tetrominoColor);
   }
 
@@ -167,7 +172,7 @@ export const update = (
   if (fullRows.length > 0) {
     fullRows.forEach((y) => {
       state.board.splice(y, 1);
-      state.board.unshift(Array(board.width).fill(Color.White));
+      state.board.unshift(Array(boardSize.width).fill(Color.White));
     });
 
     state.score += fullRows.length;
