@@ -59,8 +59,7 @@ export type GameState = {
 
 export const EmptyCell = Color.White;
 
-const TetrominosList = [IShape, Jshape, Oshape];
-// const TetrominosList = [Jshape];
+const getTetrominoList = () => [IShape, Jshape, Oshape];
 
 export const createEmptyBoard = (board: BoardSize): Board =>
   Array(board.height)
@@ -75,7 +74,7 @@ export const pickRandomColor = (exclude: Color): Color =>
   );
 
 export const pickRandomTetromino = (): Tetromino => {
-  return pickRandom(TetrominosList);
+  return pickRandom(getTetrominoList());
 };
 
 export const init = (boardSize: BoardSize): GameState => {
@@ -133,7 +132,7 @@ export const update = (
       state.tetrominoCells,
       Move.Down,
       boardSize,
-      state.board 
+      state.board
     );
   }
 

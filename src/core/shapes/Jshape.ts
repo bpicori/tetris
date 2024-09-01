@@ -17,7 +17,7 @@ export const Jshape: Tetromino = {
       [x + 2, 1],
     ];
   },
-  rotate: (current, boardSize, board) => {
+  rotate: (current) => {
     const [centerX, centerY] = current[0]; // The center piece
 
     // Calculate the positions of other pieces relative to the center
