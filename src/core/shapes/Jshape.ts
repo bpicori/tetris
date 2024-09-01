@@ -1,11 +1,18 @@
-import { Move } from "../tetris";
+import { EmptyCell, Move } from "../tetris";
 import {
   hasLeftEdgeCollision,
   hasRightEdgeCollision,
   hasBottomEdgeCollision,
-  createVector,
+  Vector2,
 } from "../utils";
 import { Tetromino } from "./tetromino";
+
+export enum JshapeRotation {
+  Up,
+  Right,
+  Down,
+  Left,
+}
 
 export const Jshape: Tetromino = {
   initialShape: (board) => {
@@ -17,24 +24,37 @@ export const Jshape: Tetromino = {
       [x + 2, 1],
     ];
   },
-  rotate: (current) => {
-    const [centerX, centerY] = current[0]; // The center piece
+  rotate: (current, boardSize, board) => {
+    const [centerX, centerY] = current[0];
 
     // Calculate the positions of other pieces relative to the center
     const relativePositions = current
       .slice(1)
-      .map(([x, y]) => [x - centerX, y - centerY]);
+      .map<Vector2>(([x, y]) => [x - centerX, y - centerY]);
 
     // Rotate the relative positions
-    const rotatedRelativePositions = relativePositions.map(([x, y]) => [-y, x]);
+    const rotatedRelativePositions = relativePositions.map<Vector2>(
+      ([x, y]) => [-y, x]
+    );
 
     // Convert back to absolute positions
-    return [
-      createVector(centerX, centerY), // Center piece stays the same
-      ...rotatedRelativePositions.map(([x, y]) =>
-        createVector(x + centerX, y + centerY)
-      ),
+    const newPosition = [
+      [centerX, centerY] as Vector2, // Center piece stays the same
+      ...rotatedRelativePositions.map<Vector2>(([x, y]) => [
+        x + centerX,
+        y + centerY,
+      ]),
     ];
+
+    const isOutOfBounds = newPosition.some(
+      ([x, y]) => x < 0 || x >= boardSize.width || y >= boardSize.height
+    );
+    if (isOutOfBounds) return current;
+
+    const isColliding = newPosition.some(([x, y]) => board[y][x] !== EmptyCell);
+    if (isColliding) return current;
+
+    return newPosition;
   },
   move: (current, move, boardSize, board) => {
     switch (move) {
