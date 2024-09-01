@@ -41,8 +41,6 @@ export const run = (engine: Engine) => {
       move
     );
 
-    console.log(newState);
-
     state = newState;
 
     // Clear the board

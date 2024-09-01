@@ -1,5 +1,6 @@
 import { IShape } from "./shapes/Ishape";
 import { Jshape } from "./shapes/Jshape";
+import { Lshape } from "./shapes/Lshape";
 import { Oshape } from "./shapes/Oshape";
 import { BoardSize, Tetromino } from "./shapes/tetromino";
 import { pickRandom, Vector2 } from "./utils";
@@ -59,7 +60,7 @@ export type GameState = {
 
 export const EmptyCell = Color.White;
 
-const getTetrominoList = () => [IShape, Jshape, Oshape];
+const getTetrominoList = () => [IShape, Jshape, Oshape, Lshape];
 
 export const createEmptyBoard = (board: BoardSize): Board =>
   Array(board.height)

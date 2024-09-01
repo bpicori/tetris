@@ -2,9 +2,19 @@ import { Board, EmptyCell } from "./tetris";
 
 export type Vector2 = readonly [number, number];
 
-
 export const pickRandom = <T>(arr: T[]): T => {
   return arr[Math.floor(Math.random() * arr.length)];
+};
+
+export const safeAccess = <T>(
+  arr: T[][],
+  x: number,
+  y: number
+): T | undefined => {
+  if (y < 0 || y >= arr.length) return undefined;
+  if (x < 0 || x >= arr[y].length) return undefined;
+
+  return arr[y][x];
 };
 
 export const hasLeftEdgeCollision = (
