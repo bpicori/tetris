@@ -8,11 +8,17 @@ export interface BoardSize {
 
 export interface Tetromino {
   initialShape(boardSize: BoardSize): Vector2[];
-  rotate(current: Vector2[], boardSize: BoardSize, board: Board): Vector2[];
+  rotate(
+    current: Vector2[],
+    boardSize: BoardSize,
+    board: Board,
+    emptyCell: string
+  ): Vector2[];
   move(
     current: Vector2[],
     move: Move,
     boardSize: BoardSize,
-    board: Board
+    board: Board,
+    emptyCell: string
   ): Vector2[];
 }

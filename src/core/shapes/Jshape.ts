@@ -1,4 +1,4 @@
-import { EmptyCell, Move } from "../tetris";
+import { Move } from "../tetris";
 import {
   hasLeftEdgeCollision,
   hasRightEdgeCollision,
@@ -24,7 +24,7 @@ export const Jshape: Tetromino = {
       [x + 2, 1],
     ];
   },
-  rotate: (current, boardSize, board) => {
+  rotate: (current, boardSize, board, emptyCell) => {
     const [centerX, centerY] = current[0];
 
     // Calculate the positions of other pieces relative to the center
@@ -51,23 +51,28 @@ export const Jshape: Tetromino = {
     );
     if (isOutOfBounds) return current;
 
-    const isColliding = newPosition.some(([x, y]) => board[y][x] !== EmptyCell);
+    const isColliding = newPosition.some(([x, y]) => board[y][x] !== emptyCell);
     if (isColliding) return current;
 
     return newPosition;
   },
-  move: (current, move, boardSize, board) => {
+  move: (current, move, boardSize, board, emptyCell) => {
     switch (move) {
       case Move.Left:
-        return hasLeftEdgeCollision(current, board)
+        return hasLeftEdgeCollision(current, board, emptyCell)
           ? current
           : current.map(([x, y]) => [x - 1, y]);
       case Move.Right:
-        return hasRightEdgeCollision(current, boardSize.width, board)
+        return hasRightEdgeCollision(current, boardSize.width, board, emptyCell)
           ? current
           : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        return hasBottomEdgeCollision(current, boardSize.height, board)
+        return hasBottomEdgeCollision(
+          current,
+          boardSize.height,
+          board,
+          emptyCell
+        )
           ? current
           : current.map(([x, y]) => [x, y + 1]);
     }

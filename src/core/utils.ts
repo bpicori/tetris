@@ -1,4 +1,4 @@
-import { Board, EmptyCell } from "./tetris";
+import { Board } from "./tetris";
 
 export type Vector2 = readonly [number, number];
 
@@ -19,7 +19,8 @@ export const safeAccess = <T>(
 
 export const hasLeftEdgeCollision = (
   current: Vector2[],
-  board: Board
+  board: Board,
+  emptyCell: string
 ): boolean => {
   // check if is out of bounds
   const outOfBounds = current.some(([x]) => x === 0);
@@ -27,13 +28,14 @@ export const hasLeftEdgeCollision = (
   if (outOfBounds) return true;
 
   // check if is colliding with other pieces
-  return current.some(([x, y]) => board[y][x - 1] !== EmptyCell);
+  return current.some(([x, y]) => board[y][x - 1] !== emptyCell);
 };
 
 export const hasRightEdgeCollision = (
   current: Vector2[],
   width: number,
-  board: Board
+  board: Board,
+  emptyCell: string
 ): boolean => {
   // check if is out of bounds
   const outOfBounds = current.some(([x]) => x === width - 1);
@@ -41,13 +43,14 @@ export const hasRightEdgeCollision = (
   if (outOfBounds) return true;
 
   // check if is colliding with other pieces
-  return current.some(([x, y]) => board[y][x + 1] !== EmptyCell);
+  return current.some(([x, y]) => board[y][x + 1] !== emptyCell);
 };
 
 export const hasBottomEdgeCollision = (
   current: Vector2[],
   height: number,
-  board: Board
+  board: Board,
+  emptyCell: string
 ): boolean => {
   // check if is out of bounds
   const outOfBounds = current.some(([, y]) => y === height - 1);
@@ -55,5 +58,5 @@ export const hasBottomEdgeCollision = (
   if (outOfBounds) return true;
 
   // check if is colliding with other pieces
-  return current.some(([x, y]) => board[y + 1][x] !== EmptyCell);
+  return current.some(([x, y]) => board[y + 1][x] !== emptyCell);
 };

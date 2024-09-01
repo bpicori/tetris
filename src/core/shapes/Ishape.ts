@@ -1,4 +1,4 @@
-import { EmptyCell, Move } from "../tetris";
+import { Move } from "../tetris";
 import {
   hasBottomEdgeCollision,
   hasLeftEdgeCollision,
@@ -18,7 +18,7 @@ export const IShape: Tetromino = {
     ];
   },
 
-  rotate: (current, boardSize, board): Vector2[] => {
+  rotate: (current, boardSize, board, emptyCell): Vector2[] => {
     // detect if is is horizontal or vertical
     const isHorizontal = current[0][1] === current[1][1];
 
@@ -59,7 +59,7 @@ export const IShape: Tetromino = {
       : rotateHorizontal(current);
 
     // check if has collision
-    if (newPosition.some(([x, y]) => board[y][x] !== EmptyCell)) {
+    if (newPosition.some(([x, y]) => board[y][x] !== emptyCell)) {
       return current;
     }
 
@@ -70,19 +70,25 @@ export const IShape: Tetromino = {
     current,
     move: Move.Left | Move.Right | Move.Down,
     boardSize,
-    board
+    board,
+    emptyCell
   ): Vector2[] => {
     switch (move) {
       case Move.Left:
-        return hasLeftEdgeCollision(current, board)
+        return hasLeftEdgeCollision(current, board, emptyCell)
           ? current
           : current.map(([x, y]) => [x - 1, y]);
       case Move.Right:
-        return hasRightEdgeCollision(current, boardSize.width, board)
+        return hasRightEdgeCollision(current, boardSize.width, board, emptyCell)
           ? current
           : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        return hasBottomEdgeCollision(current, boardSize.height, board)
+        return hasBottomEdgeCollision(
+          current,
+          boardSize.height,
+          board,
+          emptyCell
+        )
           ? current
           : current.map(([x, y]) => [x, y + 1]);
     }

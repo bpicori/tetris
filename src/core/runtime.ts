@@ -19,6 +19,8 @@ export interface Engine {
   requestAnimationFrame(callback: (time: number) => void): number;
   cancelAnimationFrame(id: number): void;
   drawGameOverScreen(): void;
+  getSupportedColors(): string[];
+  getEmptyCell(): string;
 }
 
 export const run = (engine: Engine) => {
@@ -31,7 +33,11 @@ export const run = (engine: Engine) => {
   engine.clearAll();
 
   const boardSize = engine.globals().boardSize;
-  let state = init(boardSize);
+  let state = init(
+    boardSize,
+    engine.getSupportedColors(),
+    engine.getEmptyCell()
+  );
 
   const gameLoop = (time: number) => {
     if (state.gameOver) {
@@ -41,13 +47,7 @@ export const run = (engine: Engine) => {
     }
 
     const move = moveQueue.shift();
-    const newState = update(
-      state,
-      time,
-      boardSize,
-      engine.globals().speed,
-      move
-    );
+    const newState = update(state, time, engine.globals().speed, move);
 
     state = newState;
 
@@ -62,7 +62,7 @@ export const run = (engine: Engine) => {
     for (let y = 0; y < boardSize.height; y++) {
       for (let x = 0; x < boardSize.width; x++) {
         const color = state.board[y][x];
-        if (color === Color.White) {
+        if (color === engine.getEmptyCell()) {
           engine.drawEmptyCell([x, y]);
         } else {
           engine.drawCell([x, y], color);

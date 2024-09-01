@@ -6,38 +6,17 @@ import { BoardSize, Tetromino } from "./shapes/tetromino";
 import { pickRandom, Vector2 } from "./utils";
 
 /**
- * TODO: Game over doesn't work
  * TODO: Add other shapes
- *      - JShape
- *      - LShape
  *      - SShape
  *      - TShape
  *      - ZShape
  * TODO: Add a preview of the next tetromino
  * TODO: Add a start screen
  * TODO: Add a pause screen
- * TODO: Add a game over screen
  * TODO: Add a score
  * TODO: Add effects when a row is completed
  */
 
-export enum Color {
-  Cyan = "#01EDFA",
-  Purple = "#DD0AB2",
-  Red = "#EA141C",
-  DarkOrange = "#FE4819",
-  SandyBrown = "#FF910C",
-  DarkGreen = "#39892F",
-  Blue = "#0077D3",
-  DarkPurple = "#78256F",
-  Navy = "#2E2E84",
-  DarkMediumBlue = "#485DC5",
-  Salmon = "#FD3F59",
-  Orange = "#FFC82E",
-  Yellow = "#FEFB34",
-  Green = "#53DA3F",
-  White = "#FFFFFF",
-}
 
 export enum Move {
   Left = "left",
@@ -46,42 +25,54 @@ export enum Move {
   Rotate = "rotate",
 }
 
-export type Board = Color[][];
+export type Board = string[][];
 
 export type GameState = {
   board: Board;
+  boardSize: BoardSize;
   tetromino: Tetromino;
-  tetrominoColor: Color;
+  tetrominoColor: string;
   tetrominoCells: Vector2[];
   score: number;
   time: number;
   gameOver: boolean;
+  colors: string[]; // should not contain the empty cell value
+  emptyCell: string;
 };
-
-export const EmptyCell = Color.White;
 
 const getTetrominoList = () => [IShape, Jshape, Oshape, Lshape];
 
-export const createEmptyBoard = (board: BoardSize): Board =>
-  Array(board.height)
+export const createEmptyBoard = (
+  boardSize: BoardSize,
+  emptyCell: string
+): Board =>
+  Array(boardSize.height)
     .fill(null)
-    .map(() => Array(board.width).fill(Color.White));
+    .map(() => Array(boardSize.width).fill(emptyCell));
 
-export const pickRandomColor = (exclude: Color): Color =>
-  pickRandom(
-    Object.values(Color)
-      .filter((color) => color !== Color.White)
-      .filter((color) => color !== exclude)
-  );
+export const pickRandomColor = (
+  colors: string[],
+  excludeColor?: string
+): string => {
+  if (!excludeColor) {
+    return pickRandom(colors);
+  }
+
+  return pickRandom(colors.filter((color) => color !== excludeColor));
+};
 
 export const pickRandomTetromino = (): Tetromino => {
   return pickRandom(getTetrominoList());
 };
 
-export const init = (boardSize: BoardSize): GameState => {
-  const board = createEmptyBoard(boardSize);
+export const init = (
+  boardSize: BoardSize,
+  colors: string[],
+  emptyCell: string
+): GameState => {
+  const board = createEmptyBoard(boardSize, emptyCell);
   const tetromino = pickRandomTetromino();
-  const tetrominoColor = pickRandomColor(Color.White);
+  const tetrominoColor = pickRandomColor(colors);
   const tetrominoCells = tetromino.initialShape(boardSize);
 
   return {
@@ -92,16 +83,28 @@ export const init = (boardSize: BoardSize): GameState => {
     score: 0,
     time: 0,
     gameOver: false,
+    boardSize,
+    colors,
+    emptyCell,
   };
 };
 
 export const update = (
   state: GameState,
   currentTime: number,
-  boardSize: BoardSize,
   speed: number,
   move?: Move
 ): GameState => {
+  const {
+    board,
+    boardSize,
+    emptyCell,
+    tetromino,
+    tetrominoCells,
+    tetrominoColor,
+    colors,
+  } = state;
+
   if (state.gameOver) {
     return { ...state };
   }
@@ -109,16 +112,18 @@ export const update = (
   if (move) {
     if (move === Move.Rotate) {
       state.tetrominoCells = state.tetromino.rotate(
-        state.tetrominoCells,
+        tetrominoCells,
         boardSize,
-        state.board
+        board,
+        emptyCell
       );
     } else {
       state.tetrominoCells = state.tetromino.move(
-        state.tetrominoCells,
+        tetrominoCells,
         move,
         boardSize,
-        state.board
+        board,
+        emptyCell
       );
     }
   }
@@ -129,11 +134,12 @@ export const update = (
 
   if (currentTime - state.time > speed) {
     state.time = currentTime;
-    state.tetrominoCells = state.tetromino.move(
+    state.tetrominoCells = tetromino.move(
       state.tetrominoCells,
       Move.Down,
       boardSize,
-      state.board
+      state.board,
+      emptyCell
     );
   }
 
@@ -143,26 +149,26 @@ export const update = (
       return true;
     }
 
-    return state.board[y + 1][x] !== Color.White;
+    return state.board[y + 1][x] !== emptyCell;
   });
 
   if (isTouching) {
     state.tetrominoCells.forEach(([x, y]) => {
-      state.board[y][x] = state.tetrominoColor;
+      state.board[y][x] = tetrominoColor;
     });
 
     state.tetromino = pickRandomTetromino();
-    state.tetrominoCells = state.tetromino.initialShape(boardSize);
-    state.tetrominoColor = pickRandomColor(state.tetrominoColor);
+    state.tetrominoCells = tetromino.initialShape(boardSize);
+    state.tetrominoColor = pickRandomColor(colors, tetrominoColor);
   }
 
   // check if the game is over
-  const isGameOver = state.board[0].some((cell) => cell !== Color.White);
+  const isGameOver = state.board[0].some((cell) => cell !== emptyCell);
   state.gameOver = isGameOver;
 
   // detect if there is a full row
   const fullRows = state.board.reduce((acc, row, y) => {
-    if (row.every((cell) => cell !== Color.White)) {
+    if (row.every((cell) => cell !== emptyCell)) {
       acc.push(y);
     }
 
@@ -172,7 +178,7 @@ export const update = (
   if (fullRows.length > 0) {
     fullRows.forEach((y) => {
       state.board.splice(y, 1);
-      state.board.unshift(Array(boardSize.width).fill(Color.White));
+      state.board.unshift(Array(boardSize.width).fill(emptyCell));
     });
 
     state.score += fullRows.length;

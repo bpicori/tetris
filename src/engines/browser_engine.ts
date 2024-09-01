@@ -10,6 +10,25 @@ const GLOBALS = {
   speed: 500,
 };
 
+const Colors: string[] = [
+  "#01EDFA", // Cyan
+  "#DD0AB2", // Purple
+  "#EA141C", // Red
+  "#FE4819", // DarkOrange
+  "#FF910C", // SandyBrown
+  "#39892F", // DarkGreen
+  "#0077D3", // Blue
+  "#78256F", // DarkPurple
+  "#2E2E84", // Navy
+  "#485DC5", // DarkMediumBlue
+  "#FD3F59", // Salmon
+  "#FFC82E", // Orange
+  "#FEFB34", // Yellow
+  "#53DA3F", // Green
+];
+
+const EMPTY_CELL = "#FFFFFF";
+
 function getCanvas(): HTMLCanvasElement {
   const canvas = document.getElementById("tetris") as HTMLCanvasElement;
   if (!canvas) {
@@ -132,4 +151,6 @@ export const browserEngine: Engine = {
     ctx.textAlign = "center";
     ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
   },
+  getSupportedColors: () => Colors,
+  getEmptyCell: () => EMPTY_CELL,
 };
