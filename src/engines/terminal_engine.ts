@@ -1,94 +1,172 @@
 import { Engine, Global } from "../core/runtime";
 import { Move } from "../core/tetris";
-import { safeAccess, Vector2 } from "../core/utils";
 import * as readline from "readline";
 
-const GLOBALS: Global = {
-  boardSize: { width: 10, height: 20 },
-  cellSize: 1,
+const GLOBALS: Readonly<Global> = {
+  boardSize: { width: 20, height: 20 },
   speed: 500,
+  cellSize: 1,
 };
 
-const BLOCK_CHAR = "▀";
-const EMPTY_CHAR = ".";
+const EMPTY_CHAR = "·";
+const FILLED_CHAR = "█";
+const BOX = {
+  topLeft: "┌",
+  topRight: "┐",
+  bottomLeft: "└",
+  bottomRight: "┘",
+  horizontal: "─",
+  vertical: "│",
+} as const;
 
-let board: string[][] = [];
+let gameBoard: string[][];
+let lastRenderedBoard: string = "";
+let moveCallback: ((move: Move) => void) | null = null;
 
-const drawBoard = () => {
-  const output = board.map((row) => row.join("")).join("\n");
-  console.log(output);
+const createEmptyBoard = (width: number, height: number): string[][] =>
+  Array(height)
+    .fill(null)
+    .map(() => Array(width).fill(EMPTY_CHAR));
+
+const renderRow = (row: string[]): string =>
+  `${BOX.vertical}${row.join("")}${BOX.vertical}`;
+
+const getTerminalSize = (): { width: number; height: number } => ({
+  width: process.stdout.columns,
+  height: process.stdout.rows,
+});
+
+const centerText = (text: string, width: number): string => {
+  const padding = Math.max(0, Math.floor((width - text.length) / 2));
+  return " ".repeat(padding) + text;
 };
 
-const clearConsole = () => {
-  process.stdout.write("\x1b[2J\x1b[0f");
+const renderBoard = (board: string[][]): string[] => {
+  const { width } = GLOBALS.boardSize;
+  const topBorder = `${BOX.topLeft}${BOX.horizontal.repeat(width)}${
+    BOX.topRight
+  }`;
+  const bottomBorder = `${BOX.bottomLeft}${BOX.horizontal.repeat(width)}${
+    BOX.bottomRight
+  }`;
+  return [topBorder, ...board.map(renderRow), bottomBorder];
 };
 
-const setupInputListeners = (callback: (move: Move) => void) => {
+const clearConsole = (): void => {
+  process.stdout.write("\x1b[2J");
+};
+
+const hideCursor = (): void => {
+  process.stdout.write("\x1b[?25l");
+};
+
+const showCursor = (): void => {
+  process.stdout.write("\x1b[?25h");
+};
+
+const moveCursor = (x: number, y: number): void => {
+  process.stdout.write(`\x1b[${y};${x}H`);
+};
+
+const displayBoard = (board: string[][]): void => {
+  const { width, height } = getTerminalSize();
+  const renderedBoard = renderBoard(board);
+  const verticalPadding = Math.max(
+    0,
+    Math.floor((height - renderedBoard.length) / 2)
+  );
+  const centeredBoard = renderedBoard.map((line) => centerText(line, width));
+
+  moveCursor(1, 1);
+  process.stdout.write("\n".repeat(verticalPadding));
+  centeredBoard.forEach((line) => {
+    process.stdout.write(line + "\n");
+  });
+};
+
+const setupInputListeners = (): void => {
   readline.emitKeypressEvents(process.stdin);
-  process.stdin.setRawMode(true);
-
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(true);
+  }
   process.stdin.on("keypress", (_, key) => {
     if (key.ctrl && key.name === "c") {
+      showCursor();
       process.exit();
     } else {
-      switch (key.name) {
-        case "left":
-          callback(Move.Left);
-          break;
-        case "right":
-          callback(Move.Right);
-          break;
-        case "down":
-          callback(Move.Down);
-          break;
-        case "up":
-          callback(Move.Rotate);
-          break;
-      }
+      const moveMap: { [key: string]: Move } = {
+        left: Move.Left,
+        right: Move.Right,
+        down: Move.Down,
+        up: Move.Rotate,
+      };
+      const move = moveMap[key.name];
+      if (move && moveCallback) moveCallback(move);
     }
   });
+};
+
+const renderLoop = (): void => {
+  const renderedBoard = renderBoard(gameBoard).join("\n");
+  if (renderedBoard !== lastRenderedBoard) {
+    clearConsole();
+    displayBoard(gameBoard);
+    lastRenderedBoard = renderedBoard;
+  }
+  setTimeout(renderLoop, GLOBALS.speed);
 };
 
 export const terminalEngine: Engine = {
   setup: () => {
     clearConsole();
-    console.log("Tetris game started. Use arrow keys to play.");
+    hideCursor();
+    gameBoard = createEmptyBoard(
+      GLOBALS.boardSize.width,
+      GLOBALS.boardSize.height
+    );
+    setupInputListeners();
+    renderLoop();
   },
-
-  clearAll: clearConsole,
-
-  clearCell: ([x, y]: Vector2) => {
-    safeAccess(board, y, x) && (board[y][x] = EMPTY_CHAR);
+  clearAll: () => {
+    gameBoard = createEmptyBoard(
+      GLOBALS.boardSize.width,
+      GLOBALS.boardSize.height
+    );
   },
-
-  drawEmptyCell: ([x, y]: Vector2) => {
-    safeAccess(board, y, x) && (board[y][x] = EMPTY_CHAR);
+  clearCell: ([x, y]) => {
+    if (y >= 0 && y < gameBoard.length && x >= 0 && x < gameBoard[y].length) {
+      gameBoard[y][x] = EMPTY_CHAR;
+    }
   },
-
-  drawCell: ([x, y]: Vector2) => {
-    safeAccess(board, y, x) && (board[y][x] = BLOCK_CHAR);
+  drawEmptyCell: ([x, y]) => {
+    if (y >= 0 && y < gameBoard.length && x >= 0 && x < gameBoard[y].length) {
+      gameBoard[y][x] = EMPTY_CHAR;
+    }
   },
-
+  drawCell: ([x, y]) => {
+    if (y >= 0 && y < gameBoard.length && x >= 0 && x < gameBoard[y].length) {
+      gameBoard[y][x] = FILLED_CHAR;
+    }
+  },
   globals: () => GLOBALS,
-
   onMove: (callback: (move: Move) => void) => {
-    setupInputListeners(callback);
+    moveCallback = callback;
   },
-
   requestAnimationFrame: (callback: (time: number) => void) => {
-    return setInterval(() => {
-      callback(Date.now());
-      clearConsole();
-      drawBoard();
-    }, GLOBALS.speed) as any;
+    return setInterval(
+      () => callback(Date.now()),
+      GLOBALS.speed
+    ) as unknown as number;
   },
-
   cancelAnimationFrame: (id: number) => {
     clearInterval(id);
+    showCursor();
   },
-
   drawGameOverScreen: () => {
+    clearConsole();
+    moveCursor(1, 1);
     console.log("Game Over");
+    showCursor();
   },
   getEmptyCell: () => EMPTY_CHAR,
   getSupportedColors: () => ["red", "green", "blue"],
