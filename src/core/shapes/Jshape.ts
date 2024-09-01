@@ -4,6 +4,7 @@ import {
   hasRightEdgeCollision,
   hasBottomEdgeCollision,
   Vector2,
+  safeAccess,
 } from "../utils";
 import { Tetromino } from "./tetromino";
 
@@ -49,9 +50,14 @@ export const Jshape: Tetromino = {
     const isOutOfBounds = newPosition.some(
       ([x, y]) => x < 0 || x >= boardSize.width || y >= boardSize.height
     );
-    if (isOutOfBounds) return current;
 
-    const isColliding = newPosition.some(([x, y]) => board[y][x] !== emptyCell);
+    const isColliding = newPosition.some(
+      ([x, y]) => safeAccess(board, y, x) && board[y][x] !== emptyCell
+    );
+
+    console.log(isOutOfBounds, isColliding);
+
+    if (isOutOfBounds) return current;
     if (isColliding) return current;
 
     return newPosition;

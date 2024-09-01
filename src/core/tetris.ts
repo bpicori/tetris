@@ -6,6 +6,7 @@ import { BoardSize, Tetromino } from "./shapes/tetromino";
 import { pickRandom, Vector2 } from "./utils";
 
 /**
+ * TODO: when rotating J or L near the edge, the piece is not rotated and blocks the movement
  * TODO: Add other shapes
  *      - SShape
  *      - TShape
@@ -16,7 +17,6 @@ import { pickRandom, Vector2 } from "./utils";
  * TODO: Add a score
  * TODO: Add effects when a row is completed
  */
-
 
 export enum Move {
   Left = "left",
@@ -95,15 +95,7 @@ export const update = (
   speed: number,
   move?: Move
 ): GameState => {
-  const {
-    board,
-    boardSize,
-    emptyCell,
-    tetromino,
-    tetrominoCells,
-    tetrominoColor,
-    colors,
-  } = state;
+  const { boardSize, emptyCell, colors } = state;
 
   if (state.gameOver) {
     return { ...state };
@@ -112,17 +104,17 @@ export const update = (
   if (move) {
     if (move === Move.Rotate) {
       state.tetrominoCells = state.tetromino.rotate(
-        tetrominoCells,
+        state.tetrominoCells,
         boardSize,
-        board,
+        state.board,
         emptyCell
       );
     } else {
       state.tetrominoCells = state.tetromino.move(
-        tetrominoCells,
+        state.tetrominoCells,
         move,
         boardSize,
-        board,
+        state.board,
         emptyCell
       );
     }
@@ -134,7 +126,7 @@ export const update = (
 
   if (currentTime - state.time > speed) {
     state.time = currentTime;
-    state.tetrominoCells = tetromino.move(
+    state.tetrominoCells = state.tetromino.move(
       state.tetrominoCells,
       Move.Down,
       boardSize,
@@ -154,12 +146,12 @@ export const update = (
 
   if (isTouching) {
     state.tetrominoCells.forEach(([x, y]) => {
-      state.board[y][x] = tetrominoColor;
+      state.board[y][x] = state.tetrominoColor;
     });
 
     state.tetromino = pickRandomTetromino();
-    state.tetrominoCells = tetromino.initialShape(boardSize);
-    state.tetrominoColor = pickRandomColor(colors, tetrominoColor);
+    state.tetrominoCells = state.tetromino.initialShape(boardSize);
+    state.tetrominoColor = pickRandomColor(colors, state.tetrominoColor);
   }
 
   // check if the game is over

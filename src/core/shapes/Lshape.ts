@@ -47,7 +47,7 @@ export const Lshape: Tetromino = {
     if (isOutOfBounds) return current;
 
     const isColliding = newPosition.some(
-      ([x, y]) => safeAccess(board, y, x) !== emptyCell
+      ([x, y]) => safeAccess(board, y, x) && board[y][x] !== emptyCell
     );
     if (isColliding) return current;
 
@@ -65,7 +65,12 @@ export const Lshape: Tetromino = {
           ? current
           : current.map(([x, y]) => [x + 1, y]);
       case Move.Down:
-        return hasBottomEdgeCollision(current, boardSize.height, board, emptyCell)
+        return hasBottomEdgeCollision(
+          current,
+          boardSize.height,
+          board,
+          emptyCell
+        )
           ? current
           : current.map(([x, y]) => [x, y + 1]);
     }
