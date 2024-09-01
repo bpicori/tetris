@@ -8,7 +8,7 @@ import {
 import { BoardSize, Tetromino } from "./tetromino";
 
 export const IShape: Tetromino = {
-  shape: (board: BoardSize) => {
+  initialShape: (board: BoardSize) => {
     const x = Math.floor(board.width / 2);
     return [
       [x - 1, 0],

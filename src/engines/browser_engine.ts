@@ -26,39 +26,41 @@ function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   return ctx;
 }
 
+function setupInputListeners() {
+  const cellSizeInput = document.getElementById(
+    "cell-size"
+  ) as HTMLInputElement;
+  const rowsInput = document.getElementById("rows") as HTMLInputElement;
+  const colsInput = document.getElementById("cols") as HTMLInputElement;
+  const speedInput = document.getElementById("speed") as HTMLInputElement;
+
+  cellSizeInput.addEventListener("change", () => {
+    GLOBALS.cellSize = parseInt(cellSizeInput.value);
+    setupCanvas();
+  });
+
+  rowsInput.addEventListener("change", () => {
+    GLOBALS.boardSize.height = parseInt(rowsInput.value);
+    setupCanvas();
+  });
+
+  colsInput.addEventListener("change", () => {
+    GLOBALS.boardSize.width = parseInt(colsInput.value);
+    setupCanvas();
+  });
+
+  speedInput.addEventListener("change", () => {
+    GLOBALS.speed = parseInt(speedInput.value);
+  });
+}
+
 export function setupCanvas() {
   const canvas = getCanvas();
   canvas.width = GLOBALS.boardSize.width * GLOBALS.cellSize;
   canvas.height = GLOBALS.boardSize.height * GLOBALS.cellSize;
+
+  setupInputListeners();
 }
-
-// function setupInputListeners() {
-//   const cellSizeInput = document.getElementById(
-//     "cell-size"
-//   ) as HTMLInputElement;
-//   const rowsInput = document.getElementById("rows") as HTMLInputElement;
-//   const colsInput = document.getElementById("cols") as HTMLInputElement;
-//   const speedInput = document.getElementById("speed") as HTMLInputElement;
-
-//   cellSizeInput.addEventListener("change", () => {
-//     GLOBALS.cellSize = parseInt(cellSizeInput.value);
-//     setupCanvas();
-//   });
-
-//   rowsInput.addEventListener("change", () => {
-//     GLOBALS.boardSize.height = parseInt(rowsInput.value);
-//     setupCanvas();
-//   });
-
-//   colsInput.addEventListener("change", () => {
-//     GLOBALS.boardSize.width = parseInt(colsInput.value);
-//     setupCanvas();
-//   });
-
-//   speedInput.addEventListener("change", () => {
-//     GLOBALS.speed = parseInt(speedInput.value);
-//   });
-// }
 
 export const browserEngine: Engine = {
   clearAll: () => {

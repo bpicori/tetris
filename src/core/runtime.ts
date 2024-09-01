@@ -41,6 +41,8 @@ export const run = (engine: Engine) => {
       move
     );
 
+    console.log(newState);
+
     state = newState;
 
     // Clear the board
@@ -63,10 +65,10 @@ export const run = (engine: Engine) => {
     }
 
     // Draw the current tetromino
-    const tetromino = state.tetromino;
+    const tetrominoCells = state.tetrominoCells;
     const tetrominoColor = state.tetrominoColor;
 
-    for (const [x, y] of tetromino) {
+    for (const [x, y] of tetrominoCells) {
       engine.drawCell([x, y], tetrominoColor);
     }
 
