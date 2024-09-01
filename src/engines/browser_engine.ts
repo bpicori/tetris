@@ -1,7 +1,7 @@
 import { Engine } from "../core/runtime";
 import { Move } from "../core/tetris";
 
-export const GLOBALS = {
+const GLOBALS = {
   boardSize: {
     width: 10,
     height: 20,
@@ -36,17 +36,17 @@ function setupInputListeners() {
 
   cellSizeInput.addEventListener("change", () => {
     GLOBALS.cellSize = parseInt(cellSizeInput.value);
-    setupCanvas();
+    browserEngine.setup();
   });
 
   rowsInput.addEventListener("change", () => {
     GLOBALS.boardSize.height = parseInt(rowsInput.value);
-    setupCanvas();
+    browserEngine.setup();
   });
 
   colsInput.addEventListener("change", () => {
     GLOBALS.boardSize.width = parseInt(colsInput.value);
-    setupCanvas();
+    browserEngine.setup();
   });
 
   speedInput.addEventListener("change", () => {
@@ -54,15 +54,14 @@ function setupInputListeners() {
   });
 }
 
-export function setupCanvas() {
-  const canvas = getCanvas();
-  canvas.width = GLOBALS.boardSize.width * GLOBALS.cellSize;
-  canvas.height = GLOBALS.boardSize.height * GLOBALS.cellSize;
-
-  setupInputListeners();
-}
-
 export const browserEngine: Engine = {
+  setup: () => {
+    const canvas = getCanvas();
+    canvas.width = GLOBALS.boardSize.width * GLOBALS.cellSize;
+    canvas.height = GLOBALS.boardSize.height * GLOBALS.cellSize;
+
+    setupInputListeners();
+  },
   clearAll: () => {
     const canvas = getCanvas();
     const ctx = getContext(canvas);

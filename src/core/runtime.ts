@@ -9,6 +9,7 @@ export interface Global {
 }
 
 export interface Engine {
+  setup(): void;
   clearAll(): void;
   clearCell(vec: Vector2): void;
   drawEmptyCell(vec: Vector2): void;
@@ -34,7 +35,7 @@ export const run = (engine: Engine) => {
 
   const gameLoop = (time: number) => {
     if (state.gameOver) {
-      engine.clearAll()
+      engine.clearAll();
       engine.drawGameOverScreen();
       return;
     }

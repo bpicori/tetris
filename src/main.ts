@@ -1,10 +1,13 @@
 import { run } from "./core/runtime";
-import { browserEngine, setupCanvas } from "./engines/browser_engine";
-import "./style.css";
+import { terminalEngine } from "./engines/terminal_engine";
+// import "./style.css";
 
 function main() {
-  setupCanvas();
-  run(browserEngine);
+  // browserEngine.setup();
+  // run(browserEngine);
+
+  terminalEngine.setup();
+  run(terminalEngine);
 }
 
 main();
