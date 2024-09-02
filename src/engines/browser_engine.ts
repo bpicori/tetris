@@ -10,6 +10,8 @@ const GLOBALS = {
   speed: 500,
 };
 
+const MoveQueue: Move[] = [];
+
 const Colors: string[] = [
   "#01EDFA", // Cyan
   "#DD0AB2", // Purple
@@ -53,6 +55,27 @@ function setupInputListeners() {
   const colsInput = document.getElementById("cols") as HTMLInputElement;
   const speedInput = document.getElementById("speed") as HTMLInputElement;
 
+  document.addEventListener("keydown", (event) => {
+    let move: Move | undefined;
+    switch (event.key) {
+      case "ArrowUp":
+        move = Move.Rotate;
+        break;
+      case "ArrowLeft":
+        move = Move.Left;
+        break;
+      case "ArrowRight":
+        move = Move.Right;
+        break;
+      case "ArrowDown":
+        move = Move.Down;
+        break;
+    }
+    if (move !== undefined) {
+      MoveQueue.push(move);
+    }
+  });
+
   cellSizeInput.addEventListener("change", () => {
     GLOBALS.cellSize = parseInt(cellSizeInput.value);
     browserEngine.setup();
@@ -81,6 +104,7 @@ export const browserEngine: Engine = {
 
     setupInputListeners();
   },
+  moveQueue: () => MoveQueue,
   clearAll: () => {
     const canvas = getCanvas();
     const ctx = getContext(canvas);
@@ -113,28 +137,6 @@ export const browserEngine: Engine = {
     ctx.fillRect(vec[0] * cellSize, vec[1] * cellSize, cellSize, cellSize);
   },
   globals: () => GLOBALS,
-  onMove: (callback) => {
-    document.addEventListener("keydown", (event) => {
-      let move: Move | undefined;
-      switch (event.key) {
-        case "ArrowUp":
-          move = Move.Rotate;
-          break;
-        case "ArrowLeft":
-          move = Move.Left;
-          break;
-        case "ArrowRight":
-          move = Move.Right;
-          break;
-        case "ArrowDown":
-          move = Move.Down;
-          break;
-      }
-      if (move !== undefined) {
-        callback(move);
-      }
-    });
-  },
   requestAnimationFrame: (callback) => {
     return window.requestAnimationFrame(callback);
   },

@@ -55,8 +55,6 @@ export const Jshape: Tetromino = {
       ([x, y]) => safeAccess(board, y, x) && board[y][x] !== emptyCell
     );
 
-    console.log(isOutOfBounds, isColliding);
-
     if (isOutOfBounds) return current;
     if (isColliding) return current;
 

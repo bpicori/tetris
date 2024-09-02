@@ -15,21 +15,15 @@ export interface Engine {
   drawEmptyCell(vec: Vector2): void;
   drawCell(vec: Vector2, color: string): void;
   globals(): Global;
-  onMove(callback: (move: Move) => void): void;
-  requestAnimationFrame(callback: (time: number) => void): number;
+  requestAnimationFrame(callback: (time: number) => void): void;
   cancelAnimationFrame(id: number): void;
   drawGameOverScreen(): void;
   getSupportedColors(): string[];
   getEmptyCell(): string;
+  moveQueue(): Move[];
 }
 
 export const run = (engine: Engine) => {
-  const moveQueue: Move[] = [];
-
-  engine.onMove((move) => {
-    moveQueue.push(move);
-  });
-
   engine.clearAll();
 
   const boardSize = engine.globals().boardSize;
@@ -46,7 +40,7 @@ export const run = (engine: Engine) => {
       return;
     }
 
-    const move = moveQueue.shift();
+    const move = engine.moveQueue().shift();
     const newState = update(state, time, engine.globals().speed, move);
 
     state = newState;

@@ -8,6 +8,8 @@ const GLOBALS: Readonly<Global> = {
   cellSize: 1,
 };
 
+const MoveQueue: Move[] = [];
+
 const EMPTY_CHAR = "·";
 const FILLED_CHAR = "█";
 const BOX = {
@@ -21,7 +23,6 @@ const BOX = {
 
 let gameBoard: string[][];
 let lastRenderedBoard: string = "";
-let moveCallback: ((move: Move) => void) | null = null;
 
 const createEmptyBoard = (width: number, height: number): string[][] =>
   Array(height)
@@ -103,7 +104,7 @@ const setupInputListeners = (): void => {
         up: Move.Rotate,
       };
       const move = moveMap[key.name];
-      if (move && moveCallback) moveCallback(move);
+      if (move) MoveQueue.push(move);
     }
   });
 };
@@ -118,6 +119,7 @@ const renderLoop = (): void => {
 };
 
 export const terminalEngine: Engine = {
+  moveQueue: () => MoveQueue,
   setup: () => {
     clearConsole();
     hideCursor();
@@ -126,7 +128,6 @@ export const terminalEngine: Engine = {
       GLOBALS.boardSize.height
     );
     setupInputListeners();
-    renderLoop();
   },
   clearAll: () => {
     gameBoard = createEmptyBoard(
@@ -150,23 +151,18 @@ export const terminalEngine: Engine = {
     }
   },
   globals: () => GLOBALS,
-  onMove: (callback: (move: Move) => void) => {
-    moveCallback = callback;
-  },
   requestAnimationFrame: (callback: (time: number) => void) => {
-    return setInterval(
-      () => callback(Date.now()),
-      GLOBALS.speed
-    ) as unknown as number;
+    displayBoard(gameBoard);
+
+    setTimeout(() => {
+      callback(Date.now());
+    }, 1);
   },
-  cancelAnimationFrame: (id: number) => {
-    clearInterval(id);
-    showCursor();
-  },
+  cancelAnimationFrame: (id: number) => {},
   drawGameOverScreen: () => {
     clearConsole();
     console.log("Game Over");
   },
   getEmptyCell: () => EMPTY_CHAR,
-  getSupportedColors: () => ["red", "green", "blue"],
+  getSupportedColors: () => [],
 };
