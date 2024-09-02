@@ -28,3 +28,5 @@ npm run tetris:web
 ```
 npm run tetris:terminal
 ```
+![image](https://github.com/user-attachments/assets/0e944944-eb4d-4a35-baeb-a9db2f73a7fb)
+
