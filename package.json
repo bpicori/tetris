@@ -8,6 +8,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "clean": "rm -rf dist",
+    "build:web": "npm run clean && vite build",
+    "start:web": "vite preview",
+    "tetris:web": "vite",
     "build:terminal": "npm run clean && tsc -p tsconfig_terminal.json",
     "start:terminal": "node --experimental-modules --es-module-specifier-resolution=node dist/main_terminal.js",
     "tetris:terminal": "npm run build:terminal && npm run start:terminal"
