@@ -53,7 +53,7 @@ const renderBoard = (board: string[][]): string[] => {
 };
 
 const clearConsole = (): void => {
-  process.stdout.write("\x1b[2J");
+  process.stdout.write("\x1b[2J\x1b[H"); // clear screen and move cursor to 1,1
 };
 
 const hideCursor = (): void => {
@@ -77,11 +77,13 @@ const displayBoard = (board: string[][]): void => {
   );
   const centeredBoard = renderedBoard.map((line) => centerText(line, width));
 
-  moveCursor(1, 1);
-  process.stdout.write("\n".repeat(verticalPadding));
-  centeredBoard.forEach((line) => {
-    process.stdout.write(line + "\n");
-  });
+  const output = [
+    "\x1b[H", // Move cursor to home position
+    "\n".repeat(verticalPadding),
+    ...centeredBoard,
+  ].join("\n");
+
+  process.stdout.write(output);
 };
 
 const setupInputListeners = (): void => {
@@ -109,7 +111,6 @@ const setupInputListeners = (): void => {
 const renderLoop = (): void => {
   const renderedBoard = renderBoard(gameBoard).join("\n");
   if (renderedBoard !== lastRenderedBoard) {
-    clearConsole();
     displayBoard(gameBoard);
     lastRenderedBoard = renderedBoard;
   }
@@ -164,9 +165,7 @@ export const terminalEngine: Engine = {
   },
   drawGameOverScreen: () => {
     clearConsole();
-    moveCursor(1, 1);
     console.log("Game Over");
-    showCursor();
   },
   getEmptyCell: () => EMPTY_CHAR,
   getSupportedColors: () => ["red", "green", "blue"],
